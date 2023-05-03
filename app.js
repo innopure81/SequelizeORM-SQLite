@@ -1,3 +1,4 @@
+/*
 const Sequelize = require('sequelize');
 
 const sequelize = new Sequelize({
@@ -14,6 +15,10 @@ class Movie extends Sequelize.Model {}
 Movie.init({
     title: Sequelize.STRING
 }, { sequelize }); // same as { sequelize: sequelize } < Only required option
+*/
+
+const db = require('./db');
+const { Movie } = db.models;
 
 // async IIFE
 (async () => {
@@ -22,7 +27,7 @@ Movie.init({
         // Sync 'Movies' table
         // await Movie.sync();
         // Sync all tables
-        await sequelize.sync({ force: true });//refresh/synchronize your database tables each time you start your app
+        await db.sequelize.sync({ force: true });//refresh/synchronize your database tables each time you start your app
         //Calling sync({ force: true }) issues a DROP TABLE IF EXISTS statement, which completely deletes the table, before issuing the CREATE TABLE IF NOT EXISTS statement. 
         
     try {
