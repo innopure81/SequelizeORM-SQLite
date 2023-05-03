@@ -37,15 +37,22 @@ const { Movie } = db.models;
         // the Promise.all() method waits until all promises returned by the model .create() method are fulfilled
         const movieInstances = await Promise.all(
             [
-                Movie.create({title: 'Toy Story'}),        
-                Movie.create({title: 'The Incredibles'}),
-                Movie.create({title: 'The Sin City'})
+                Movie.create({title: 'Toy Story', runtime: 81, releaseDate: '1995-11-22', isAvailableOnVHS: true}),        
+                Movie.create({title: 'The Incredibles', runtime: 115, releaseDate: '2004-04-14', isAvailableOnVHS: true}),
+                Movie.create({title: 'Sin City', runtime: 147, releaseDate: '2005-04-14', isAvailableOnVHS: true}),
+                Movie.create({title: 'Job Hunt', runtime: 31, releaseDate: '1896-04-14', isAvailableOnVHS: true})
             ]
         );  
         const moviesJson = movieInstances.map((movie)=>movie.toJSON());
         console.log(moviesJson);
 
     } catch (error) {
-        console.error('Error connecting to the database: ', error);
+        //console.error('Error connecting to the database: ', error);
+        if (error.name === 'SequelizeValidationError') {
+            const errors = error.errors.map(err => err.message);
+            console.error('Validation errors: ', errors);
+        } else {
+            throw error;
+        }
     }
 })();
