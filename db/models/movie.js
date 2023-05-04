@@ -51,6 +51,7 @@ module.exports = (sequelize) => {
             //timestamps: false, 
             //freezeTableName: true, // disable plural table names
             //tableName: 'my_movies_table', // table name change
+            paranoid: true, // enable "soft" deletes
             sequelize 
     });
 

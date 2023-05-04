@@ -18,7 +18,8 @@ Movie.init({
 */
 
 const db = require('./db');
-const { Movie } = db.models;
+const { Movie, Person } = db.models;
+const { Op } = db.Sequelize;
 
 // async IIFE
 (async () => {
@@ -37,14 +38,60 @@ const { Movie } = db.models;
         // the Promise.all() method waits until all promises returned by the model .create() method are fulfilled
         const movieInstances = await Promise.all(
             [
-                Movie.create({title: 'Toy Story', runtime: 81, releaseDate: '1995-11-22', isAvailableOnVHS: true}),        
+                Movie.create({title: 'Toy Story', runtime: 81, releaseDate: '1995-11-22', isAvailableOnVHS: false}),        
                 Movie.create({title: 'The Incredibles', runtime: 115, releaseDate: '2004-04-14', isAvailableOnVHS: true}),
                 Movie.create({title: 'Sin City', runtime: 147, releaseDate: '2005-04-14', isAvailableOnVHS: true}),
-                Movie.create({title: 'Job Hunt', runtime: 31, releaseDate: '1896-04-14', isAvailableOnVHS: true})
+                Person.create({firstName: 'Mickey', lastName: 'Rourke'}),
             ]
         );  
         const moviesJson = movieInstances.map((movie)=>movie.toJSON());
         console.log(moviesJson);
+
+        const movie3 = Movie.build({title: 'Toy Story 3', runtime: 103, releaseDate: '2010-06-18', isAvailableOnVHS: false,});
+        movie3.title = 'Updated Title';
+        await movie3.save();
+        console.log("movie3: ", movie3.toJSON());
+
+        const personById = await Person.findByPk(1);
+        console.log("personById: ", personById.toJSON());
+
+        const movieByRelease = await Movie.findOne({ attributes: ['title'], where: {releaseDate: {[Op.gte]: '2005-01-01'}} });
+        console.log("movieByRelease: ", movieByRelease.toJSON());
+
+        // const movies = await Movie.findAll();
+        // console.log( movies.map(movie => movie.toJSON()) );
+
+        const shortMovies = await Movie.findAll({
+            attributes: ['id', 'title'],
+            where: {
+                title: {
+                    [Op.endsWith]: 'y'
+                },
+                releaseDate: {                   
+                    [Op.gte]: '1995-01-01', // greater than or equal to the date
+                },
+                runtime: {
+                    [Op.between]: [75, 160],
+                    //[Op.gt]: 95, // greater than 95
+                },
+            },
+            //order: [['id', 'DESC']] // IDs in descending order (Big to Small)
+            //order: [['releaseDate', 'ASC']], // dates in ascending order (Old to New)
+            order: [['createdAt', 'DESC']],
+        });
+          // SELECT * FROM Movies WHERE runtime = 92 AND isAvailableOnVHS = true;
+        console.log("shortMovies: ", shortMovies.map(movie => movie.toJSON()) );
+
+        const toyStory1 = await Movie.findByPk(1);
+        //toyStory1.isAvailableOnVHS = true;
+        await toyStory1.update({ isAvailableOnVHS: true, title: 'Tory Story NEW', }, { fields: ['title','isAvailableOnVHS'] });
+        await toyStory1.save();
+
+        console.log( "toyStory1: ", toyStory1.get({ plain: true }) );
+        
+        await toyStory1.destroy();
+        const movies = await Movie.findAll();
+        console.log( movies.map(movie => movie.toJSON()) );
 
     } catch (error) {
         //console.error('Error connecting to the database: ', error);
@@ -56,3 +103,4 @@ const { Movie } = db.models;
         }
     }
 })();
+
